@@ -1,72 +1,136 @@
 #include <iostream>
-#include <fstream>
-#include <cstring>
-using namespace std;
-struct Estudiante{
-    int id;
-    char nombres[50];
-    char apellidos[50];
-    float notas[4];
-    float promedio;
-    char resultado[10];
+using namespace std; 
+const char *nombre_archivo= "archivo.dat";
+struct Estudiante {
+	int codigo; 
+	char nombres[50]; 
+	char apellidos[50];
+	int notas; 	
 };
-int main(){
-    int n;
-    Estudiante *estudiantes;
-    cout<<"Ingrese la cantidad de estudiantes: ";
-    cin>>n;
-    estudiantes = new Estudiante[n];
-    for(int i=0; i<n; i++){
-        cout<<"\nIngrese los datos del estudiante "<<i+1<<":\n";
-        cout<<"ID: ";
-        cin>>estudiantes[i].id;
-        cout<<"Nombres: ";
-        cin.ignore();
-        cin.getline(estudiantes[i].nombres, 50);
-        cout<<"Apellidos: ";
-        cin.getline(estudiantes[i].apellidos, 50);
-        cout<<"Nota 1: ";
-        cin>>estudiantes[i].notas[0];
-        cout<<"Nota 2: ";
-        cin>>estudiantes[i].notas[1];
-        cout<<"Nota 3: ";
-        cin>>estudiantes[i].notas[2];
-        cout<<"Nota 4: ";
-        cin>>estudiantes[i].notas[3];
-        estudiantes[i].promedio = (estudiantes[i].notas[0] + estudiantes[i].notas[1] + estudiantes[i].notas[2] + estudiantes[i].notas[3])/4;
-        if(estudiantes[i].promedio >= 60){
-            strcpy(estudiantes[i].resultado, "APROBADO");
-        }
-        else{
-            strcpy(estudiantes[i].resultado, "REPROBADO");
-        }
-    }
-    ofstream archivo("notas.dat", ios::binary);
-    if(archivo){
-        archivo.write(reinterpret_cast<char *>(estudiantes), n*sizeof(Estudiante));
-        archivo.close();
-    }
-    else{
-        cout<<"Error al abrir el archivo para escritura\n";
-    }
-    ifstream archivo2("notas.dat", ios::binary);
-    if(archivo2){
-        Estudiante est;
-        cout<<"\nDatos de los estudiantes:\n";
-        while(archivo2.read(reinterpret_cast<char *>(&est), sizeof(Estudiante))){
-            cout<<"\nID: "<<est.id<<"\n";
-            cout<<"Nombres: "<<est.nombres<<"\n";
-            cout<<"Apellidos: "<<est.apellidos<<"\n";
-            cout<<"Notas: "<<est.notas[0]<<" "<<est.notas[1]<<" "<<est.notas[2]<<" "<<est.notas[3]<<"\n";
-            cout<<"Promedio: "<<est.promedio<<"\n";
-            cout<<"Resultado: "<<est.resultado<<"\n";
-        }
-        archivo2.close();
-    }
-    else{
-        cout<<"Error al abrir el archivo para lectura\n";
-    }
+void Leer();
+void Crear();
+void Actualizar();
+void Borrar();
+main(){
+   Leer();
+   Crear();
+   Borrar();
+   Actualizar();
+   system("pause");
+}
+void Leer(){
+	system("cls");
+	FILE* archivo = fopen(nombre_archivo,"rb");
+	if(!archivo){
+		archivo = fopen(nombre_archivo,"w+b");
+	}
+	Estudiante estudiante; 
+	int id=0; //Indice o Posicion del registro dentro del archivo
+	fread(&estudiante,sizeof(Estudiante),1,archivo);
+	cout<<"___________________________________________________________________________________"<<endl; 
+	cout<<"ID"<<"|"<<"Codigo"<<"|"<<" Nombres "<<"|"<<" Apellidos "<<"|"<<" Notas "<<endl;
+	do{
+		cout<<id<<"|"<<estudiante.codigo<<"|"<<estudiante.nombres<<"|"<<estudiante.apellidos<<"|"<<estudiante.notas<<endl;
+		fread(&estudiante,sizeof(Estudiante),1,archivo);
+		id+=1;
+	}while(feof(archivo)==0);
+	fclose(archivo);	
+}
+void Crear(){
+	FILE* archivo = fopen(nombre_archivo,"a+b");
+	char res; 
+	Estudiante estudiante;
+	do{
+		fflush(stdin);
+		cout<<"Ingrese Codigo:"; 
+		cin>>estudiante.codigo; 
+		cin.ignore();
+		
+		cout<<"Ingrese Nombres:"; 
+		cin.getline(estudiante.nombres,50);
+		
+		cout<<"Ingrese Apellidos:"; 
+		cin.getline(estudiante.apellidos,50);
+		
+		cout<<"Ingrese Nota 1:"; 
+		cin>>estudiante.notas;
+		
+		cout<<"Ingrese Nota 2:"; 
+		cin>>estudiante.notas;
+		
+		cout<<"Ingrese Nota 3:"; 
+		cin>>estudiante.notas;
+		
+		cout<<"Ingrese Nota 4:"; 
+		cin>>estudiante.notas;
+		
+	    fwrite(&estudiante,sizeof(Estudiante),1,archivo);
+	    cout<<"Desea Ingresar Otro Estudiante (s/n): ";
+    	cin>>res;
+	}while(res=='s' || res=='S');
+	fclose(archivo);
+	Leer();
+}
+void Actualizar(){
+	
+	FILE* archivo = fopen(nombre_archivo,"r+b"); //Crea y borra
+	Estudiante estudiante;
+	int id=0;
+	cout<<"Ingrese el ID que desea Modificar:"; 
+	cin>>id; 
+	fseek(archivo,id * sizeof(Estudiante),SEEK_SET);
 
-    delete[] estudiantes;
-    return 0;
+		cout<<"Ingrese Codigo:"; 
+		cin>>estudiante.codigo; 
+		cin.ignore();
+		
+		cout<<"Ingrese Nombres:"; 
+		cin.getline(estudiante.nombres,50);
+		
+		cout<<"Ingrese Apellidos:"; 
+		cin.getline(estudiante.apellidos,50);
+		
+		cout<<"Ingrese Nota 1:"; 
+		cin>>estudiante.notas;
+		
+		cout<<"Ingrese Nota 2:"; 
+		cin>>estudiante.notas;
+		
+		cout<<"Ingrese Nota 3:"; 
+		cin>>estudiante.notas;
+		
+		cout<<"Ingrese Nota 4:"; 
+		cin>>estudiante.notas;
+		
+	    fwrite(&estudiante,sizeof(Estudiante),1,archivo);
+	
+	fclose(archivo);
+	Leer();
+}
+void Borrar(){
+	const char *nombre_archivo_temp = "archivo_temp.dat"; 
+		FILE* archivo = fopen(nombre_archivo,"rb");
+		FILE* archivo_temp = fopen(nombre_archivo_temp,"w+b");
+		Estudiante estudiante; 
+		int id=0,id_n=0; 
+		cout<<"Ingrese el ID a eliminar: ";
+		cin>>id; 
+		while(fread(&estudiante,sizeof(Estudiante),1,archivo)){	
+		    if(id_n!=id){
+		    	fwrite(&estudiante,sizeof(Estudiante),1,archivo_temp);  	
+			}
+		    id_n++; 
+		}
+		fclose(archivo);
+		fclose(archivo_temp);
+			
+		archivo = fopen(nombre_archivo,"rb");
+	    archivo_temp = fopen(nombre_archivo_temp,"wb");
+	    while(fread(&estudiante,sizeof(Estudiante),1,archivo_temp)){
+		fwrite(&estudiante,sizeof(Estudiante),1,archivo);
+		
+	}
+		fclose(archivo);
+    	fclose(archivo_temp);
+	    Leer();	
 }
